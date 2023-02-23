@@ -35,6 +35,12 @@ from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, time_sync
 from utils.rboxs_utils import poly2rbox, rbox2poly
 
+import zmq
+
+context = zmq.Context()
+socket = context.socket(zmq.PUSH)
+socket.bind("tcp://*:5555")
+
 
 @torch.no_grad()
 def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
@@ -154,13 +160,9 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
 
                 # Write results
                 for *poly, conf, cls in reversed(det):
-                    if save_txt:  # Write to file
-                        # xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                        # poly = poly.tolist()
-                        line = (cls, *poly, conf) if save_conf else (cls, *poly)  # label format
-                        print(('%g ' * len(line)).rstrip() % line)
-                        # with open(txt_path + '.txt', 'a') as f:
-                        #     f.write(('%g ' * len(line)).rstrip() % line + '\n')
+                    line = (cls, *poly, conf) if save_conf else (cls, *poly)  # label format
+                    to_return = (('%g ' * len(line)).rstrip() % line).split()
+                    socket.send_pyobj(to_return)
 
                     if save_img or save_crop or view_img:  # Add poly to image
                         c = int(cls)  # integer class

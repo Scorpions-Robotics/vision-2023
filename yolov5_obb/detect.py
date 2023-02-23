@@ -162,7 +162,10 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                 for *poly, conf, cls in reversed(det):
                     line = (cls, *poly, conf) if save_conf else (cls, *poly)  # label format
                     to_return = (('%g ' * len(line)).rstrip() % line).split()
-                    socket.send_pyobj(to_return)
+                    try:
+                        socket.send_pyobj(to_return)
+                    except:
+                        print("Couldn't send.")
 
                     if save_img or save_crop or view_img:  # Add poly to image
                         c = int(cls)  # integer class

@@ -20,10 +20,18 @@ def py_cpu_nms_poly(dets, thresh):
     polys = []
     areas = []
     for i in range(len(dets)):
-        tm_polygon = polyiou.VectorDouble([dets[i][0], dets[i][1],
-                                           dets[i][2], dets[i][3],
-                                           dets[i][4], dets[i][5],
-                                           dets[i][6], dets[i][7]])
+        tm_polygon = polyiou.VectorDouble(
+            [
+                dets[i][0],
+                dets[i][1],
+                dets[i][2],
+                dets[i][3],
+                dets[i][4],
+                dets[i][5],
+                dets[i][6],
+                dets[i][7],
+            ]
+        )
         polys.append(tm_polygon)
     order = scores.argsort()[::-1]
 
@@ -43,7 +51,7 @@ def py_cpu_nms_poly(dets, thresh):
 
 def py_cpu_nms(dets, thresh):
     """Pure Python NMS baseline."""
-    #print('dets:', dets)
+    # print('dets:', dets)
     x1 = dets[:, 0]
     y1 = dets[:, 1]
     x2 = dets[:, 2]
@@ -77,15 +85,15 @@ def py_cpu_nms(dets, thresh):
 def nmsbynamedict(nameboxdict, nms, thresh):
     nameboxnmsdict = {x: [] for x in nameboxdict}
     for imgname in nameboxdict:
-        #print('imgname:', imgname)
-        #keep = py_cpu_nms(np.array(nameboxdict[imgname]), thresh)
-        #print('type nameboxdict:', type(nameboxnmsdict))
-        #print('type imgname:', type(imgname))
-        #print('type nms:', type(nms))
+        # print('imgname:', imgname)
+        # keep = py_cpu_nms(np.array(nameboxdict[imgname]), thresh)
+        # print('type nameboxdict:', type(nameboxnmsdict))
+        # print('type imgname:', type(imgname))
+        # print('type nms:', type(nms))
         keep = nms(np.array(nameboxdict[imgname]), thresh)
-        #print('keep:', keep)
+        # print('keep:', keep)
         outdets = []
-        #print('nameboxdict[imgname]: ', nameboxnmsdict[imgname])
+        # print('nameboxdict[imgname]: ', nameboxnmsdict[imgname])
         for index in keep:
             # print('index:', index)
             outdets.append(nameboxdict[imgname][index])
@@ -95,7 +103,7 @@ def nmsbynamedict(nameboxdict, nms, thresh):
 
 def poly2origpoly(poly, x, y, rate):
     origpoly = []
-    for i in range(int(len(poly)/2)):
+    for i in range(int(len(poly) / 2)):
         tmp_x = float(poly[i * 2] + x) / float(rate)
         tmp_y = float(poly[i * 2 + 1] + y) / float(rate)
         origpoly.append(tmp_x)
@@ -107,23 +115,23 @@ def mergebase(srcpath, dstpath, nms):
     filelist = util.GetFileFromThisRootDir(srcpath)
     for fullname in filelist:
         name = util.custombasename(fullname)
-        #print('name:', name)
-        dstname = os.path.join(dstpath, name + '.txt')
-        with open(fullname, 'r') as f_in:
+        # print('name:', name)
+        dstname = os.path.join(dstpath, name + ".txt")
+        with open(fullname, "r") as f_in:
             nameboxdict = {}
             lines = f_in.readlines()
-            splitlines = [x.strip().split(' ') for x in lines]
+            splitlines = [x.strip().split(" ") for x in lines]
             for splitline in splitlines:
                 subname = splitline[0]
-                splitname = subname.split('__')
+                splitname = subname.split("__")
                 oriname = splitname[0]
-                pattern1 = re.compile(r'__\d+___\d+')
-                #print('subname:', subname)
+                pattern1 = re.compile(r"__\d+___\d+")
+                # print('subname:', subname)
                 x_y = re.findall(pattern1, subname)
-                x_y_2 = re.findall(r'\d+', x_y[0])
+                x_y_2 = re.findall(r"\d+", x_y[0])
                 x, y = int(x_y_2[0]), int(x_y_2[1])
 
-                pattern2 = re.compile(r'__([\d+\.]+)__\d+___')
+                pattern2 = re.compile(r"__([\d+\.]+)__\d+___")
 
                 rate = re.findall(pattern2, subname)[0]
 
@@ -133,20 +141,25 @@ def mergebase(srcpath, dstpath, nms):
                 det = origpoly
                 det.append(confidence)
                 det = list(map(float, det))
-                if (oriname not in nameboxdict):
+                if oriname not in nameboxdict:
                     nameboxdict[oriname] = []
                 nameboxdict[oriname].append(det)
             nameboxnmsdict = nmsbynamedict(nameboxdict, nms, nms_thresh)
-            with open(dstname, 'w') as f_out:
+            with open(dstname, "w") as f_out:
                 for imgname in nameboxnmsdict:
                     for det in nameboxnmsdict[imgname]:
-                        #print('det:', det)
+                        # print('det:', det)
                         confidence = det[-1]
                         bbox = det[0:-1]
-                        outline = imgname + ' ' + \
-                            str(confidence) + ' ' + ' '.join(map(str, bbox))
-                        #print('outline:', outline)
-                        f_out.write(outline + '\n')
+                        outline = (
+                            imgname
+                            + " "
+                            + str(confidence)
+                            + " "
+                            + " ".join(map(str, bbox))
+                        )
+                        # print('outline:', outline)
+                        f_out.write(outline + "\n")
 
 
 def mergebyrec(srcpath, dstpath):
@@ -157,9 +170,7 @@ def mergebyrec(srcpath, dstpath):
     # srcpath = r'E:\bod-dataset\results\bod-v3_rfcn_2000000'
     # dstpath = r'E:\bod-dataset\results\bod-v3_rfcn_2000000_nms'
 
-    mergebase(srcpath,
-              dstpath,
-              py_cpu_nms)
+    mergebase(srcpath, dstpath, py_cpu_nms)
 
 
 def mergebypoly(srcpath, dstpath):
@@ -167,12 +178,9 @@ def mergebypoly(srcpath, dstpath):
     srcpath: result files before merge and nms
     dstpath: result files after merge and nms
     """
-    mergebase(srcpath,
-              dstpath,
-              py_cpu_nms_poly)
+    mergebase(srcpath, dstpath, py_cpu_nms_poly)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # see demo for example
-    mergebypoly(r'work_dirs/temp/result_raw',\
-     r'work_dirs/temp/result_merge')
+    mergebypoly(r"work_dirs/temp/result_raw", r"work_dirs/temp/result_merge")

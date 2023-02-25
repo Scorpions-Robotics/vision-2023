@@ -12,8 +12,7 @@ context = zmq.Context()
 receiver = context.socket(zmq.PULL)
 receiver.connect("tcp://localhost:5555")
 
-cmd = \
-f"""
+cmd = f"""
 python yolov5_obb/detec.py --source {config.get('default', 'source')} \
 --weights {config.get('default', 'weights')} --conf-thres {config.get('default', 'confidence_threshold')} \
 --device {config.get('default', 'device')} --imgsz {config.get('default', 'size')} \
@@ -27,17 +26,18 @@ python yolov5_obb/detec.py --source {config.get('default', 'source')} \
 
 yolo = subprocess.Popen(shlex.split(cmd, posix=os.name != "nt"), shell=True, check=True)
 
+
 def angle(result: list) -> int:
     result = list(map(float, result))
 
-    x1 = result[0] - result[2]
-    y1 = result[1] - result[3]
-    x2 = result[4] - result[6]
-    y2 = result[5] - result[7]
-    
+    x1 = result[1] - result[3]
+    y1 = result[2] - result[4]
+    x2 = result[5] - result[7]
+    y2 = result[6] - result[8]
+
     dy = x2 - x1
     dx = y2 - y1
-    
+
     return math.degrees(math.atan2(dy, dx))
 
 

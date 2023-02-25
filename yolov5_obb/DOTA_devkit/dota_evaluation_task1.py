@@ -12,12 +12,14 @@
 """
 import xml.etree.ElementTree as ET
 import os
-#import cPickle
+
+# import cPickle
 import numpy as np
 import matplotlib.pyplot as plt
 import polyiou
 from functools import partial
 import argparse
+
 
 def parse_gt(filename):
     """
@@ -25,52 +27,56 @@ def parse_gt(filename):
     :return: all instances in a picture
     """
     objects = []
-    with  open(filename, 'r') as f:
+    with open(filename, "r") as f:
         while True:
             line = f.readline()
             if line:
-                splitlines = line.strip().split(' ')
+                splitlines = line.strip().split(" ")
                 object_struct = {}
-                if (len(splitlines) < 9):
+                if len(splitlines) < 9:
                     continue
-                object_struct['name'] = splitlines[8]
+                object_struct["name"] = splitlines[8]
 
-                if (len(splitlines) == 9):
-                    object_struct['difficult'] = 0
-                elif (len(splitlines) == 10):
-                    object_struct['difficult'] = int(splitlines[9])
-                object_struct['bbox'] = [float(splitlines[0]),
-                                         float(splitlines[1]),
-                                         float(splitlines[2]),
-                                         float(splitlines[3]),
-                                         float(splitlines[4]),
-                                         float(splitlines[5]),
-                                         float(splitlines[6]),
-                                         float(splitlines[7])]
+                if len(splitlines) == 9:
+                    object_struct["difficult"] = 0
+                elif len(splitlines) == 10:
+                    object_struct["difficult"] = int(splitlines[9])
+                object_struct["bbox"] = [
+                    float(splitlines[0]),
+                    float(splitlines[1]),
+                    float(splitlines[2]),
+                    float(splitlines[3]),
+                    float(splitlines[4]),
+                    float(splitlines[5]),
+                    float(splitlines[6]),
+                    float(splitlines[7]),
+                ]
                 objects.append(object_struct)
             else:
                 break
     return objects
+
+
 def voc_ap(rec, prec, use_07_metric=False):
-    """ ap = voc_ap(rec, prec, [use_07_metric])
+    """ap = voc_ap(rec, prec, [use_07_metric])
     Compute VOC AP given precision and recall.
     If use_07_metric is true, uses the
     VOC 07 11 point method (default:False).
     """
     if use_07_metric:
         # 11 point metric
-        ap = 0.
-        for t in np.arange(0., 1.1, 0.1):
+        ap = 0.0
+        for t in np.arange(0.0, 1.1, 0.1):
             if np.sum(rec >= t) == 0:
                 p = 0
             else:
                 p = np.max(prec[rec >= t])
-            ap = ap + p / 11.
+            ap = ap + p / 11.0
     else:
         # correct AP calculation
         # first append sentinel values at the end
-        mrec = np.concatenate(([0.], rec, [1.]))
-        mpre = np.concatenate(([0.], prec, [0.]))
+        mrec = np.concatenate(([0.0], rec, [1.0]))
+        mpre = np.concatenate(([0.0], prec, [0.0]))
 
         # compute the precision envelope
         for i in range(mpre.size - 1, 0, -1):
@@ -85,13 +91,15 @@ def voc_ap(rec, prec, use_07_metric=False):
     return ap
 
 
-def voc_eval(detpath,
-             annopath,
-             imagesetfile,
-             classname,
-            # cachedir,
-             ovthresh=0.5,
-             use_07_metric=False):
+def voc_eval(
+    detpath,
+    annopath,
+    imagesetfile,
+    classname,
+    # cachedir,
+    ovthresh=0.5,
+    use_07_metric=False,
+):
     """rec, prec, ap = voc_eval(detpath,
                                 annopath,
                                 imagesetfile,
@@ -116,38 +124,36 @@ def voc_eval(detpath,
     # cachedir caches the annotations in a pickle file
 
     # first load gt
-    #if not os.path.isdir(cachedir):
-     #   os.mkdir(cachedir)
-    #cachefile = os.path.join(cachedir, 'annots.pkl')
+    # if not os.path.isdir(cachedir):
+    #   os.mkdir(cachedir)
+    # cachefile = os.path.join(cachedir, 'annots.pkl')
     # read list of images
-    with open(imagesetfile, 'r') as f:
+    with open(imagesetfile, "r") as f:
         lines = f.readlines()
     imagenames = [x.strip() for x in lines]
-    
+
     recs = {}
     for i, imagename in enumerate(imagenames):
-        #print('parse_files name: ', annopath.format(imagename))
+        # print('parse_files name: ', annopath.format(imagename))
         recs[imagename] = parse_gt(annopath.format(imagename))
 
     # extract gt objects for this class
     class_recs = {}
     npos = 0
     for imagename in imagenames:
-        R = [obj for obj in recs[imagename] if obj['name'] == classname]
-        bbox = np.array([x['bbox'] for x in R])
-        difficult = np.array([x['difficult'] for x in R]).astype(np.bool_)
+        R = [obj for obj in recs[imagename] if obj["name"] == classname]
+        bbox = np.array([x["bbox"] for x in R])
+        difficult = np.array([x["difficult"] for x in R]).astype(np.bool_)
         det = [False] * len(R)
         npos = npos + sum(~difficult)
-        class_recs[imagename] = {'bbox': bbox,
-                                 'difficult': difficult,
-                                 'det': det}
+        class_recs[imagename] = {"bbox": bbox, "difficult": difficult, "det": det}
 
     # read dets from Task1* files
     detfile = detpath.format(classname)
-    with open(detfile, 'r') as f:
+    with open(detfile, "r") as f:
         lines = f.readlines()
 
-    splitlines = [x.strip().split(' ') for x in lines]
+    splitlines = [x.strip().split(" ") for x in lines]
     image_ids = [x[0] for x in splitlines]
     confidence = np.array([float(x[1]) for x in splitlines])
 
@@ -168,7 +174,7 @@ def voc_eval(detpath,
         R = class_recs[image_ids[d]]
         bb = BB[d, :].astype(float)
         ovmax = -np.inf
-        BBGT = R['bbox'].astype(float)
+        BBGT = R["bbox"].astype(float)
 
         ## compute det bb with each BBGT
         if BBGT.size > 0:
@@ -177,7 +183,7 @@ def voc_eval(detpath,
 
             # 1. calculate the overlaps between hbbs, if the iou between hbbs are 0, the iou between obbs are 0, too.
             # pdb.set_trace()
-            BBGT_xmin =  np.min(BBGT[:, 0::2], axis=1)
+            BBGT_xmin = np.min(BBGT[:, 0::2], axis=1)
             BBGT_ymin = np.min(BBGT[:, 1::2], axis=1)
             BBGT_xmax = np.max(BBGT[:, 0::2], axis=1)
             BBGT_ymax = np.max(BBGT[:, 1::2], axis=1)
@@ -190,14 +196,16 @@ def voc_eval(detpath,
             iymin = np.maximum(BBGT_ymin, bb_ymin)
             ixmax = np.minimum(BBGT_xmax, bb_xmax)
             iymax = np.minimum(BBGT_ymax, bb_ymax)
-            iw = np.maximum(ixmax - ixmin + 1., 0.)
-            ih = np.maximum(iymax - iymin + 1., 0.)
+            iw = np.maximum(ixmax - ixmin + 1.0, 0.0)
+            ih = np.maximum(iymax - iymin + 1.0, 0.0)
             inters = iw * ih
 
             # union
-            uni = ((bb_xmax - bb_xmin + 1.) * (bb_ymax - bb_ymin + 1.) +
-                   (BBGT_xmax - BBGT_xmin + 1.) *
-                   (BBGT_ymax - BBGT_ymin + 1.) - inters)
+            uni = (
+                (bb_xmax - bb_xmin + 1.0) * (bb_ymax - bb_ymin + 1.0)
+                + (BBGT_xmax - BBGT_xmin + 1.0) * (BBGT_ymax - BBGT_ymin + 1.0)
+                - inters
+            )
 
             overlaps = inters / uni
 
@@ -208,10 +216,12 @@ def voc_eval(detpath,
             def calcoverlaps(BBGT_keep, bb):
                 overlaps = []
                 for index, GT in enumerate(BBGT_keep):
-
-                    overlap = polyiou.iou_poly(polyiou.VectorDouble(BBGT_keep[index]), polyiou.VectorDouble(bb))
+                    overlap = polyiou.iou_poly(
+                        polyiou.VectorDouble(BBGT_keep[index]), polyiou.VectorDouble(bb)
+                    )
                     overlaps.append(overlap)
                 return overlaps
+
             if len(BBGT_keep) > 0:
                 overlaps = calcoverlaps(BBGT_keep, bb)
 
@@ -221,45 +231,46 @@ def voc_eval(detpath,
                 jmax = BBGT_keep_index[jmax]
 
         if ovmax > ovthresh:
-            if not R['difficult'][jmax]:
-                if not R['det'][jmax]:
-                    tp[d] = 1.
-                    R['det'][jmax] = 1
+            if not R["difficult"][jmax]:
+                if not R["det"][jmax]:
+                    tp[d] = 1.0
+                    R["det"][jmax] = 1
                 else:
-                    fp[d] = 1.
+                    fp[d] = 1.0
         else:
-            fp[d] = 1.
+            fp[d] = 1.0
 
     # compute precision recall
 
-    print('check fp:', fp)
-    print('check tp', tp)
+    print("check fp:", fp)
+    print("check tp", tp)
 
-
-    print('npos num:', npos)
+    print("npos num:", npos)
     fp = np.cumsum(fp)
     tp = np.cumsum(tp)
 
     rec = tp / float(npos)  # recall
     # avoid divide by zero in case the first detection matches a difficult
     # ground truth
-    prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps) # 准确率
+    prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)  # 准确率
     ap = voc_ap(rec, prec, use_07_metric)
 
     return rec, prec, ap
 
-def GetFileFromThisRootDir(dir,ext = None):
-  allfiles = []
-  needExtFilter = (ext != None)
-  for root,dirs,files in os.walk(dir):
-    for filespath in files:
-      filepath = os.path.join(root, filespath)
-      extension = os.path.splitext(filepath)[1][1:]
-      if needExtFilter and extension in ext:
-        allfiles.append(filepath)
-      elif not needExtFilter:
-        allfiles.append(filepath)
-  return allfiles
+
+def GetFileFromThisRootDir(dir, ext=None):
+    allfiles = []
+    needExtFilter = ext != None
+    for root, dirs, files in os.walk(dir):
+        for filespath in files:
+            filepath = os.path.join(root, filespath)
+            extension = os.path.splitext(filepath)[1][1:]
+            if needExtFilter and extension in ext:
+                allfiles.append(filepath)
+            elif not needExtFilter:
+                allfiles.append(filepath)
+    return allfiles
+
 
 def image2txt(srcpath, dstpath):
     """
@@ -267,22 +278,38 @@ def image2txt(srcpath, dstpath):
     @param srcpath: imageset
     @param dstpath: imgnamefile.txt的存放路径
     """
-    filelist = GetFileFromThisRootDir(srcpath)  # srcpath文件夹下的所有文件相对路径 eg:['example_split/../P0001.txt', ..., '?.txt']
+    filelist = GetFileFromThisRootDir(
+        srcpath
+    )  # srcpath文件夹下的所有文件相对路径 eg:['example_split/../P0001.txt', ..., '?.txt']
     for fullname in filelist:  # 'example_split/../P0001.txt'
-        name = os.path.basename(os.path.splitext(fullname)[0])# 只留下文件名 eg:P0001
-        dstname = os.path.join(dstpath, 'imgnamefile.txt')  # eg: result/imgnamefile.txt
+        name = os.path.basename(os.path.splitext(fullname)[0])  # 只留下文件名 eg:P0001
+        dstname = os.path.join(dstpath, "imgnamefile.txt")  # eg: result/imgnamefile.txt
         if not os.path.exists(dstpath):
             os.makedirs(dstpath)
-        with open(dstname, 'a') as f:
-            f.writelines(name + '\n')
+        with open(dstname, "a") as f:
+            f.writelines(name + "\n")
+
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='MMDet test (and eval) a model')
-    parser.add_argument('--detpath', default='runs/val/yolov5t_DroneVehicle_val/splited_obb_prediction_Txt/Task1_{:s}.txt', help='test config file path')
-    parser.add_argument('--annopath', default='/media/test/4d846cae-2315-4928-8d1b-ca6d3a61a3c6/DroneVehicle/val/raw/labelTxt/{:s}.txt', help='checkpoint file')
-    parser.add_argument('--imagesetfile', default='/media/test/4d846cae-2315-4928-8d1b-ca6d3a61a3c6/DroneVehicle/val/raw/imgnamefile.txt', help='checkpoint file')
+    parser = argparse.ArgumentParser(description="MMDet test (and eval) a model")
+    parser.add_argument(
+        "--detpath",
+        default="runs/val/yolov5t_DroneVehicle_val/splited_obb_prediction_Txt/Task1_{:s}.txt",
+        help="test config file path",
+    )
+    parser.add_argument(
+        "--annopath",
+        default="/media/test/4d846cae-2315-4928-8d1b-ca6d3a61a3c6/DroneVehicle/val/raw/labelTxt/{:s}.txt",
+        help="checkpoint file",
+    )
+    parser.add_argument(
+        "--imagesetfile",
+        default="/media/test/4d846cae-2315-4928-8d1b-ca6d3a61a3c6/DroneVehicle/val/raw/imgnamefile.txt",
+        help="checkpoint file",
+    )
     args = parser.parse_args()
     return args
+
 
 def main():
     args = parse_args()
@@ -291,7 +318,7 @@ def main():
     annopath = args.annopath
     imagesetfile = args.imagesetfile
     # For DroneVehicle
-    classnames=['vehicle']
+    classnames = ["vehicle"]
     # For DOTA-v2.0
     # classnames = [ 'plane', 'baseball-diamond', 'bridge', 'ground-track-field', 'small-vehicle', 'large-vehicle', 'ship',
     #      'tennis-court', 'basketball-court', 'storage-tank',  'soccer-ball-field', 'roundabout', 'harbor',
@@ -306,21 +333,20 @@ def main():
     map = 0
     skippedClassCount = 0
     for classname in classnames:
-        print('classname:', classname)
+        print("classname:", classname)
         detfile = detpath.format(classname)
         if not (os.path.exists(detfile)):
             skippedClassCount += 1
-            print('This class is not be detected in your dataset: {:s}'.format(classname))
+            print(
+                "This class is not be detected in your dataset: {:s}".format(classname)
+            )
             continue
-        rec, prec, ap = voc_eval(detpath,
-             annopath,
-             imagesetfile,
-             classname,
-             ovthresh=0.5,
-             use_07_metric=True)
+        rec, prec, ap = voc_eval(
+            detpath, annopath, imagesetfile, classname, ovthresh=0.5, use_07_metric=True
+        )
         map = map + ap
-        #print('rec: ', rec, 'prec: ', prec, 'ap: ', ap)
-        print('ap: ', ap)
+        # print('rec: ', rec, 'prec: ', prec, 'ap: ', ap)
+        print("ap: ", ap)
         classaps.append(ap)
 
         # # umcomment to show p-r curve of each category
@@ -337,12 +363,14 @@ def main():
         # plt.plot(rec, prec)
         # # plt.show()
         # plt.savefig('pr_curve/{}.png'.format(classname))
-    map = map/(len(classnames)-skippedClassCount)
-    print('map:', map)
-    classaps = 100*np.array(classaps)
-    print('classaps: ', classaps)
-if __name__ == '__main__':
+    map = map / (len(classnames) - skippedClassCount)
+    print("map:", map)
+    classaps = 100 * np.array(classaps)
+    print("classaps: ", classaps)
+
+
+if __name__ == "__main__":
     main()
-    # image2txt('/media/test/4d846cae-2315-4928-8d1b-ca6d3a61a3c6/DroneVehicle/val/raw/images', 
+    # image2txt('/media/test/4d846cae-2315-4928-8d1b-ca6d3a61a3c6/DroneVehicle/val/raw/images',
     #           '/media/test/4d846cae-2315-4928-8d1b-ca6d3a61a3c6/DroneVehicle/val/raw/')
     # image2txt('dataset/dataset_demo_rate1.0_split1024_gap200/images', 'dataset/dataset_demo_rate1.0_split1024_gap200/')

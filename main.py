@@ -13,7 +13,7 @@ receiver = context.socket(zmq.PULL)
 receiver.connect("tcp://localhost:5555")
 
 cmd = f"""
-python yolov5_obb/detec.py --source {config.get('default', 'source')} \
+python3 yolov5_obb/detect.py --source {config.get('default', 'source')} \
 --weights {config.get('default', 'weights')} --conf-thres {config.get('default', 'confidence_threshold')} \
 --device {config.get('default', 'device')} --imgsz {config.get('default', 'size')} \
 --max-det {config.get('default', 'max_detections')} {"--half" if config.get('default', 'half_precision') == "True" else ""} \
@@ -24,7 +24,7 @@ python yolov5_obb/detec.py --source {config.get('default', 'source')} \
 {"--hide-conf" if config.get('default', 'hide_conf') == "True" else ""}
 """
 
-yolo = subprocess.Popen(shlex.split(cmd, posix=os.name != "nt"), shell=True, check=True)
+yolo = subprocess.Popen(shlex.split(cmd, posix=os.name != "nt"))
 
 
 def angle(result: list) -> int:

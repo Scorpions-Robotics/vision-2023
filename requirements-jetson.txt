@@ -1,17 +1,18 @@
+# Compatible with Python 3.6 on Jetson Nano
+# Use python3 -m pip install -r requirements.txt
+
 # PyTorch -------------------------------------
-torch==1.10.1+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
-torchvision==0.11.2+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+# See https://qengineering.eu/install-pytorch-on-jetson-nano.html
 
 # Base ----------------------------------------
-matplotlib>=3.2.2
+matplotlib==3.2.2
 numpy>=1.18.5
-opencv-python>=4.5.4
+# opencv-python>=4.5.4  # See https://qengineering.eu/install-opencv-4.5-on-jetson-nano.html
 Pillow>=7.1.2
 PyYAML>=5.3.1
 requests>=2.23.0
 scipy>=1.4.1
 tqdm>=4.41.0
-pyzmq
 
 # Logging -------------------------------------
 tensorboard>=2.4.1

@@ -64,7 +64,7 @@ def run(
     conf_thres=0.25,  # confidence threshold
     iou_thres=0.45,  # NMS IOU threshold
     max_det=1000,  # maximum detections per image
-    device="",  # cuda device, i.e. 0 or 0,1,2,3 or cpu
+    device="0",  # cuda device, i.e. 0 or 0,1,2,3 or cpu
     view_img=False,  # show results
     stream_img=False,  # stream results
     save_txt=False,  # save results to *.txt
@@ -232,8 +232,8 @@ def run(
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
 
-            if stream_img:
-                ...
+            # if stream_img:
+            #     ...
 
             # Save results (image with detections)
             if save_img:

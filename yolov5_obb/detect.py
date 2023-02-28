@@ -49,12 +49,6 @@ from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, time_sync
 from utils.rboxs_utils import poly2rbox, rbox2poly
 
-import zmq
-
-context = zmq.Context()
-socket = context.socket(zmq.PUSH)
-socket.bind("tcp://*:5555")
-
 
 @torch.no_grad()
 def run(
@@ -66,7 +60,7 @@ def run(
     max_det=1000,  # maximum detections per image
     device="0",  # cuda device, i.e. 0 or 0,1,2,3 or cpu
     view_img=False,  # show results
-    stream_img=False,  # stream results
+    stream=False,  # stream results and video
     save_txt=False,  # save results to *.txt
     save_conf=False,  # save confidences in --save-txt labels
     save_crop=False,  # save cropped prediction boxes
@@ -92,6 +86,15 @@ def run(
     webcam = source.isnumeric() or source.endswith(".txt") or (is_url and not is_file)
     if is_url and is_file:
         source = check_file(source)  # download
+
+    if stream:
+        import zmq
+
+        context = zmq.Context()
+        angle_socket = context.socket(zmq.PUSH)
+        angle_socket.bind("tcp://localhost:5805")
+        video_socket = context.socket(zmq.PUSH)
+        video_socket.bind("tcp://localhost:5806")
 
     # Directories
     save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
@@ -121,7 +124,7 @@ def run(
 
     # Dataloader
     if webcam:
-        view_img = check_imshow()
+        view_img = check_imshow() and view_img
         cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt)
         bs = len(dataset)  # batch_size
@@ -186,7 +189,7 @@ def run(
             )  # im.txt
             s += "%gx%g " % im.shape[2:]  # print string
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
-            imc = im0.copy() if save_crop else im0  # for save_crop
+            # imc = im0.copy() if save_crop else im0  # for save_crop
             annotator = Annotator(im0, line_width=line_thickness, example=str(names))
             if len(det):
                 # Rescale polys from img_size to im0 size
@@ -199,16 +202,18 @@ def run(
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
-                # Write results
+                # Show results
                 for *poly, conf, cls in reversed(det):
                     line = (
                         (cls, *poly, conf) if save_conf else (cls, *poly)
                     )  # label format
-                    to_return = (("%g " * len(line)).rstrip() % line).split()
-                    try:
-                        socket.send_pyobj(to_return)
-                    except:
-                        print("Couldn't send.")
+                    angle_data = (("%g " * len(line)).rstrip() % line).split()
+                    print(angle_data)
+                    if stream:
+                        try:
+                            angle_socket.send_pyobj(angle_data)
+                        except Exception as e:
+                            print("Couldn't send angle data.", e)
 
                     if save_img or save_crop or view_img:  # Add poly to image
                         c = int(cls)  # integer class
@@ -219,9 +224,9 @@ def run(
                         )
                         # annotator.box_label(xyxy, label, color=colors(c, True))
                         annotator.poly_label(poly, label, color=colors(c, True))
-                        if save_crop:  # Yolov5-obb doesn't support it yet
-                            # save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
-                            pass
+                        # if save_crop:  # Yolov5-obb doesn't support it yet
+                        #     # save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
+                        #     pass
 
             # Print time (inference-only)
             LOGGER.info(f"{s}Done. ({t3 - t2:.3f}s)")
@@ -231,9 +236,12 @@ def run(
             if view_img:
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
-
-            # if stream_img:
-            #     ...
+                
+            if stream:
+                try:
+                    video_socket.send_pyobj(im0)
+                except Exception as e:
+                    print("Could not send video frame.", e)
 
             # Save results (image with detections)
             if save_img:
@@ -279,13 +287,11 @@ def parse_opt():
         "--weights",
         nargs="+",
         type=str,
-        default=ROOT / "runs/train/yolov5n_DroneVehicle/weights/best.pt",
         help="model path(s)",
     )
     parser.add_argument(
         "--source",
         type=str,
-        default="/media/test/4d846cae-2315-4928-8d1b-ca6d3a61a3c6/DroneVehicle/val/raw/images/",
         help="file/dir/URL/glob, 0 for webcam",
     )
     parser.add_argument(
@@ -294,7 +300,7 @@ def parse_opt():
         "--img-size",
         nargs="+",
         type=int,
-        default=[840],
+        default=[640],
         help="inference size h,w",
     )
     parser.add_argument(
@@ -307,7 +313,7 @@ def parse_opt():
         "--max-det", type=int, default=1000, help="maximum detections per image"
     )
     parser.add_argument(
-        "--device", default="3", help="cuda device, i.e. 0 or 0,1,2,3 or cpu"
+        "--device", default="0", help="cuda device, i.e. 0 or 0,1,2,3 or cpu"
     )
     parser.add_argument("--view-img", action="store_true", help="show results")
     parser.add_argument("--save-txt", action="store_true", help="save results to *.txt")
@@ -345,10 +351,10 @@ def parse_opt():
         "--line-thickness", default=2, type=int, help="bounding box thickness (pixels)"
     )
     parser.add_argument(
-        "--hide-labels", default=False, action="store_true", help="hide labels"
+        "--hide-labels", action="store_true", help="hide labels"
     )
     parser.add_argument(
-        "--hide-conf", default=False, action="store_true", help="hide confidences"
+        "--hide-conf", action="store_true", help="hide confidences"
     )
     parser.add_argument(
         "--half", action="store_true", help="use FP16 half-precision inference"
@@ -357,7 +363,7 @@ def parse_opt():
         "--dnn", action="store_true", help="use OpenCV DNN for ONNX inference"
     )
     parser.add_argument(
-        "--stream-img", action="store_true", help="stream images to ZMQ"
+        "--stream", action="store_true", help="stream images to ZMQ"
     )
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand

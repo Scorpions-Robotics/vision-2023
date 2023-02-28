@@ -92,9 +92,9 @@ def run(
 
         context = zmq.Context()
         angle_socket = context.socket(zmq.PUSH)
-        angle_socket.bind("tcp://localhost:5805")
+        angle_socket.bind("tcp://*:5805")
         video_socket = context.socket(zmq.PUSH)
-        video_socket.bind("tcp://localhost:5806")
+        video_socket.bind("tcp://*:5806")
 
     # Directories
     save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
@@ -208,7 +208,7 @@ def run(
                         (cls, *poly, conf) if save_conf else (cls, *poly)
                     )  # label format
                     angle_data = (("%g " * len(line)).rstrip() % line).split()
-                    print(angle_data)
+                    
                     if stream:
                         try:
                             angle_socket.send_pyobj(angle_data)
@@ -227,6 +227,13 @@ def run(
                         # if save_crop:  # Yolov5-obb doesn't support it yet
                         #     # save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
                         #     pass
+            
+            else:
+                if stream:
+                    try:
+                        angle_socket.send_pyobj("No object detected")
+                    except Exception as e:
+                        print("Couldn't send angle data.", e)
 
             # Print time (inference-only)
             LOGGER.info(f"{s}Done. ({t3 - t2:.3f}s)")

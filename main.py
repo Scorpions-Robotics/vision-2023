@@ -32,6 +32,9 @@ yolo = subprocess.Popen(shlex.split(cmd, posix=os.name != "nt"))
 
 
 def angle(result: list) -> int:
+    if isinstance(result, str):
+        return result
+
     result = list(map(float, result))
 
     x1 = result[1] - result[3]
@@ -39,8 +42,8 @@ def angle(result: list) -> int:
     x2 = result[5] - result[7]
     y2 = result[6] - result[8]
 
-    dx = x2 - x1
-    dy = y2 - y1
+    dy = x2 - x1
+    dx = y2 - y1
 
     return math.degrees(math.atan2(dy, dx))
 
@@ -48,7 +51,7 @@ def angle(result: list) -> int:
 while True:
     if config.getboolean('default', 'stream'):
         result = angle_receiver.recv_pyobj()
+        print(angle(result))
         video = video_receiver.recv_pyobj()
         cv2.imshow("video", video)
         cv2.waitKey(1)
-        print(angle(result))

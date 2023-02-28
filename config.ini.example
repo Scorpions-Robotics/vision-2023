@@ -1,13 +1,15 @@
+; Copy this file to config.ini and edit it to your needs
 [default]
 weights = cone.pt
 source = 0
 size = 320
-confidence_threshold = 0.4
+input_size = 320
+confidence_threshold = 0.3
 max_detections = 1
 device = 0
 half_precision = False
 save = False
 view_img = False
 stream = True
-hide_labels = True
-hide_conf = True
+hide_labels = False
+hide_conf = False

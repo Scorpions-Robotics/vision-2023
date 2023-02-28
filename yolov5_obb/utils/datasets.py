@@ -49,6 +49,12 @@ from utils.general import (
 from utils.torch_utils import torch_distributed_zero_first
 from utils.rboxs_utils import poly_filter, poly2rbox
 
+from configparser import ConfigParser
+
+
+config = ConfigParser()
+config.read("config.ini")
+
 # Parameters
 HELP_URL = "https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data"
 IMG_FORMATS = [
@@ -391,6 +397,9 @@ class LoadStreams:
                 s = pafy.new(s).getbest(preftype="mp4").url  # YouTube URL
             s = eval(s) if s.isnumeric() else s  # i.e. s = '0' local webcam
             cap = cv2.VideoCapture(s)
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, config.getint("default", "input_size"))
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config.getint("default", "input_size") / 8 * 5)
+            cap.set(cv2.CAP_PROP_FPS, 30)
             assert cap.isOpened(), f"{st}Failed to open {s}"
             w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))

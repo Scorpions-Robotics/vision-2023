@@ -10,6 +10,8 @@
 
 # Project specific
 yolov5_obb/runs/
+runs/
+config.ini
 
 # pycache
 **/__pycache__/

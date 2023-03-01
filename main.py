@@ -45,7 +45,7 @@ def angle(result: list) -> int:
     dy = x2 - x1
     dx = y2 - y1
     degrees =  math.degrees(math.atan2(dy, dx))
-    return degree - 90  # degrees to turn
+    return math.abs(degree - 90)  # degrees to turn
 
 
 while True:

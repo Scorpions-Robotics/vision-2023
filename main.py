@@ -60,7 +60,7 @@ def data():
     global browser_frame, lock
 
     while True:
-        r_data: tuple = annotation_receiver.recv_pyobj(), video_receiver.recv_pyobj()
+        r_data: tuple = video_receiver.recv_pyobj(), annotation_receiver.recv_pyobj()
         data[0] = imutils.resize(r_data[0], width=config.get("default", "size"))
         degrees = angle(r_data[1])
 

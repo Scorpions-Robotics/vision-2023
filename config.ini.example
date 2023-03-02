@@ -14,7 +14,7 @@ max_detections = 1
 computation_device = 0
 ; Use FP16 for inference
 half_precision = False
-; Save a video, would be fun to watch after the match
+; Save a video, would be fun to watch after the match. Videos can be found in the runs/exp{run_number}/ folder
 save = False
 ; These don't have any effect on what you see but feel free to change them
 hide_labels = False

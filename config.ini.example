@@ -2,7 +2,6 @@
 [default]
 flask_ip = 10.76.72.10
 weights = cone.pt
-source = 0
 size = 320
 confidence_threshold = 0.3
 max_detections = 1
@@ -14,5 +13,8 @@ hide_conf = False
 
 set_camera_options = True
 v4l2_width = 640
-v4l2_height = 400
+v4l2_height = 480
 v4l2_format = YUYV
+
+; Camera index or G-streamer pipeline
+camera_src = 0

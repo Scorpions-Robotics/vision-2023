@@ -83,7 +83,7 @@ def run(
     save_img = not nosave and not source.endswith(".txt")  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
     is_url = source.lower().startswith(("rtsp://", "rtmp://", "http://", "https://"))
-    webcam = source.isnumeric() or source.endswith(".txt") or (is_url and not is_file)
+    webcam = source.isnumeric() or source.endswith(".txt") or (is_url and not is_file) or source.startswith("v4l2src")
     if is_url and is_file:
         source = check_file(source)  # download
 
@@ -127,7 +127,7 @@ def run(
         view_img = check_imshow() and view_img
         cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(
-            source, img_size=imgsz, stride=stride, auto=pt, set_fps=30
+            source, img_size=imgsz, stride=stride, auto=pt
         )
         bs = len(dataset)  # batch_size
     else:

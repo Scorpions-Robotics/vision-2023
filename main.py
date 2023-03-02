@@ -7,7 +7,6 @@ import threading
 from configparser import ConfigParser
 
 import cv2
-import imutils
 import zmq
 from flask import Flask, Response, render_template, request
 
@@ -25,7 +24,7 @@ lock = threading.Lock()
 
 cmd_v4l2 = f"v4l2-ctl --set-fmt-video=width={config.get('default', 'v4l2_width')},height={config.get('default', 'v4l2_height')},pixelformat={config.get('default', 'v4l2_format')}"
 cmd_yolo = f"""
-python3 yolov5_obb/detect.py --source {config.get('default', 'source')} --stream \
+python3 yolov5_obb/detect.py --source "{config.get('default', 'camera_source')}" --stream \
 --weights {config.get('default', 'weights')} --conf-thres {config.get('default', 'confidence_threshold')} \
 --device {config.get('default', 'device')} --imgsz {config.get('default', 'size')} \
 --max-det {config.get('default', 'max_detections')} {"--half" if config.get('default', 'half_precision') == "True" else ""} \
@@ -40,6 +39,7 @@ set_camera_options = (
     if config.getboolean("default", "set_camera_options")
     else None
 )
+print(cmd_yolo)
 yolo = subprocess.Popen(shlex.split(cmd_yolo, posix=posix))
 
 

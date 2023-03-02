@@ -44,7 +44,7 @@ yolo = subprocess.Popen(shlex.split(cmd_yolo, posix=posix))
 
 
 def angle(result: list) -> int:
-    """Takes coordinates (x, y) of a rectangle and returns the angles to turn."""
+    """Takes coordinates (x, y) of a rectangle and returns the degrees from the y-axis."""
 
     if isinstance(result, str):
         return result
@@ -60,7 +60,7 @@ def angle(result: list) -> int:
     dx = y2 - y1
     degrees = round(math.degrees(math.atan2(dy, dx)))
 
-    return abs(abs(degrees) - 90) if degrees < 0 else degrees - 90
+    return abs(abs(degrees) - 90) * -1 if degrees < 0 else degrees - 90 * -1
 
 
 def data():
@@ -78,9 +78,9 @@ def data():
             str(degrees),
             (10, video.shape[0] - 10),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.35,
-            (0, 0, 255),
             1,
+            (0, 0, 255),
+            3,
         )
 
         with lock:

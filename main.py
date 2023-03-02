@@ -23,7 +23,8 @@ video_receiver.connect("tcp://127.0.0.1:5806")
 browser_frame = None
 lock = threading.Lock()
 
-cmd = f"""
+cmd_v4l2 = f"v4l2-ctl --set-fmt-video=width={config.get('default', 'v4l2_width')},height={config.get('default', 'v4l2_height')},pixelformat={config.get('default', 'format')}"
+cmd_yolo = f"""
 python3 yolov5_obb/detect.py --source {config.get('default', 'source')} --stream \
 --weights {config.get('default', 'weights')} --conf-thres {config.get('default', 'confidence_threshold')} \
 --device {config.get('default', 'device')} --imgsz {config.get('default', 'size')} \
@@ -33,7 +34,13 @@ python3 yolov5_obb/detect.py --source {config.get('default', 'source')} --stream
 {"--hide-conf" if config.get('default', 'hide_conf') == "True" else ""}
 """
 
-yolo = subprocess.Popen(shlex.split(cmd, posix=os.name != "nt"))
+posix = os.name != "nt"
+set_camera_options = (
+    subprocess.run(shlex.split(cmd_v4l2, posix=posix))
+    if config.getboolean("default", "set_camera_options")
+    else None
+)
+yolo = subprocess.Popen(shlex.split(cmd_yolo, posix=posix))
 
 
 def angle(result: list) -> int:
@@ -53,21 +60,23 @@ def angle(result: list) -> int:
     dx = y2 - y1
     degrees = round(math.degrees(math.atan2(dy, dx)))
 
-    return math.abs(math.abs(degrees) - 90) if degrees < 0 else degrees - 90
+    return abs(abs(degrees) - 90) if degrees < 0 else degrees - 90
 
 
 def data():
     global browser_frame, lock
 
     while True:
-        r_data: tuple = video_receiver.recv_pyobj(), annotation_receiver.recv_pyobj()
-        data[0] = imutils.resize(r_data[0], width=config.get("default", "size"))
-        degrees = angle(r_data[1])
+        video, angle_data = (
+            video_receiver.recv_pyobj(),
+            annotation_receiver.recv_pyobj(),
+        )
+        degrees = angle(angle_data)
 
         cv2.putText(
-            r_data[0],
-            degrees,
-            (10, r_data[0].shape[0] - 10),
+            video,
+            str(degrees),
+            (10, video.shape[0] - 10),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.35,
             (0, 0, 255),
@@ -75,7 +84,7 @@ def data():
         )
 
         with lock:
-            browser_frame = r_data[0].copy()
+            browser_frame = video.copy()
 
 
 def generate():

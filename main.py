@@ -41,7 +41,11 @@ height={config.get('default', 'v4l2_height')}, pixelformat={config.get('default'
 """
 
 posix = os.name != "nt"
-print(cmd_v4l2 if config.getboolean("default", "set_camera_options") else "Camera options not set")
+print(
+    cmd_v4l2
+    if config.getboolean("default", "set_camera_options")
+    else "Camera options not set"
+)
 set_camera_options = (
     subprocess.run(shlex.split(cmd_v4l2, posix=posix))
     if config.getboolean("default", "set_camera_options")
@@ -69,13 +73,13 @@ def angle(result: list) -> int:
     degrees = round(math.degrees(math.atan2(dy, dx)))
 
     returned_degrees = abs(abs(degrees) - 90) * -1 if degrees < 0 else degrees - 90 * -1
-    
+
     if returned_degrees < -90:
-        returned_degrees = (returned_degrees +180 * -1)
-        
+        returned_degrees = returned_degrees + 180 * -1
+
     elif returned_degrees > 90:
-        returned_degrees = (returned_degrees -180) * -1
-        
+        returned_degrees = (returned_degrees - 180) * -1
+
     return returned_degrees
 
 
@@ -98,7 +102,7 @@ def main_func():
             (0, 0, 255),
             3,
         )
-        
+
         try:
             nt_table.putString("degrees", str(degrees))
         except Exception as e:

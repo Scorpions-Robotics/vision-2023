@@ -24,7 +24,7 @@ lock = threading.Lock()
 
 cmd_v4l2 = f"v4l2-ctl -v width={config.get('default', 'v4l2_width')},height={config.get('default', 'v4l2_height')},pixelformat={config.get('default', 'v4l2_format')} -d {config.get('default', 'camera_index')}"
 cmd_yolo = f"""
-python3 yolov5_obb/detect.py --source "{config.get('default', 'camera_source')}" \
+python3 yolov5_obb/detect.py --source "{config.get('default', 'camera_src')}" \
 --stream --weights {config.get('default', 'weights')} --conf-thres {config.get('default', 'confidence_threshold')} \
 --device {config.get('default', 'computation_device')} --imgsz {config.get('default', 'size')} \
 --max-det {config.get('default', 'max_detections')} {"--half" if config.get('default', 'half_precision') == "True" else ""} \

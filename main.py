@@ -9,6 +9,7 @@ from configparser import ConfigParser
 import cv2
 import zmq
 from flask import Flask, Response, render_template, request
+from networktables import NetworkTables
 
 config = ConfigParser()
 config.read("config.ini")
@@ -18,6 +19,9 @@ annotation_receiver = context.socket(zmq.PULL)
 annotation_receiver.connect("tcp://127.0.0.1:5805")
 video_receiver = context.socket(zmq.PULL)
 video_receiver.connect("tcp://127.0.0.1:5806")
+
+NetworkTables.initialize(server=config.get("default", "networktables_server"))
+nt_table = NetworkTables.getTable("ScorpionsVision")
 
 browser_frame = None
 lock = threading.Lock()
@@ -75,7 +79,7 @@ def angle(result: list) -> int:
     return returned_degrees
 
 
-def data():
+def main_func():
     global browser_frame, lock
 
     while True:
@@ -94,6 +98,11 @@ def data():
             (0, 0, 255),
             3,
         )
+        
+        try:
+            nt_table.putString("degrees", str(degrees))
+        except Exception as e:
+            print(e)
 
         with lock:
             browser_frame = video.copy()
@@ -141,7 +150,7 @@ def shutdown_server():
 
 if __name__ == "__main__":
     try:
-        t = threading.Thread(target=data)
+        t = threading.Thread(target=main_func)
         t.daemon = True
         t.start()
 

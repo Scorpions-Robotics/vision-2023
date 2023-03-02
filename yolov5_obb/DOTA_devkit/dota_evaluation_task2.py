@@ -10,12 +10,13 @@
     search for PATH_TO_BE_CONFIGURED to config the paths
     Note, the evaluation is on the large scale images
 """
-import xml.etree.ElementTree as ET
 import os
+import xml.etree.ElementTree as ET
+
+import matplotlib.pyplot as plt
 
 # import cPickle
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def parse_gt(filename):

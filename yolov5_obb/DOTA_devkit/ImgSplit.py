@@ -1,12 +1,13 @@
-import os
 import codecs
-import numpy as np
-import math
-from dota_utils import GetFileFromThisRootDir
-import cv2
-import shapely.geometry as shgeo
-import dota_utils as util
 import copy
+import math
+import os
+
+import cv2
+import dota_utils as util
+import numpy as np
+import shapely.geometry as shgeo
+from dota_utils import GetFileFromThisRootDir
 
 
 def choose_best_pointorder_fit_another(poly1, poly2):

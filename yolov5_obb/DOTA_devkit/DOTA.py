@@ -2,13 +2,14 @@
 #  Licensed under the Simplified BSD License [see bsd.txt]
 
 import os
-import matplotlib.pyplot as plt
-from matplotlib.collections import PatchCollection
-from matplotlib.patches import Polygon, Circle
-import numpy as np
-import dota_utils as util
 from collections import defaultdict
+
 import cv2
+import dota_utils as util
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.collections import PatchCollection
+from matplotlib.patches import Circle, Polygon
 
 
 def _isArrayLike(obj):

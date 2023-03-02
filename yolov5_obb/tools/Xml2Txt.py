@@ -1,7 +1,8 @@
-import xml.etree.ElementTree as ET
-from DOTA_devkit import dota_utils as util
 import os
 import shutil
+import xml.etree.ElementTree as ET
+
+from DOTA_devkit import dota_utils as util
 
 
 def DroneVehicle2DOTA(xmlpath, txtpath, extractclassname, specified_class):

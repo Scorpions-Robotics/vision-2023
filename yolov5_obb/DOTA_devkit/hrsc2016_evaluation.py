@@ -10,14 +10,15 @@
     search for PATH_TO_BE_CONFIGURED to config the paths
     Note, the evaluation is on the large scale images
 """
-import xml.etree.ElementTree as ET
 import os
+import xml.etree.ElementTree as ET
+from functools import partial
+
+import matplotlib.pyplot as plt
 
 # import cPickle
 import numpy as np
-import matplotlib.pyplot as plt
 import polyiou
-from functools import partial
 
 
 def parse_gt(filename):

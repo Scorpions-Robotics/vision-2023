@@ -215,9 +215,8 @@ def export_saved_model(
     keras_model = None
     try:
         import tensorflow as tf
-        from tensorflow import keras
-
         from models.tf import TFDetect, TFModel
+        from tensorflow import keras
 
         LOGGER.info(f"\n{prefix} starting export with tensorflow {tf.__version__}...")
         f = str(file).replace(".pt", "_saved_model")
@@ -287,7 +286,6 @@ def export_tflite(
     # YOLOv5 TensorFlow Lite export
     try:
         import tensorflow as tf
-
         from models.tf import representative_dataset_gen
 
         LOGGER.info(f"\n{prefix} starting export with tensorflow {tf.__version__}...")

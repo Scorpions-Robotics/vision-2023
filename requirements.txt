@@ -2,7 +2,11 @@
 torch==1.10.1+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
 torchvision==0.11.2+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
 
+# nms_rotated ---------------------------------
+-e yolov5_obb/utils/nms_rotated/.
+
 # Base ----------------------------------------
+imutils
 matplotlib>=3.2.2
 numpy>=1.18.5
 opencv-python>=4.5.4
@@ -11,7 +15,6 @@ PyYAML>=5.3.1
 requests>=2.23.0
 scipy>=1.4.1
 tqdm>=4.41.0
-pyzmq
 
 # Logging -------------------------------------
 tensorboard>=2.4.1
@@ -20,6 +23,10 @@ tensorboard>=2.4.1
 # Plotting ------------------------------------
 pandas>=1.1.4
 seaborn>=0.11.0
+
+# Server --------------------------------------
+pyzmq
+flask
 
 # Export --------------------------------------
 # coremltools>=4.1  # CoreML export

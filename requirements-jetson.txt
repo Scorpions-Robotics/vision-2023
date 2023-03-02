@@ -4,7 +4,11 @@
 # PyTorch -------------------------------------
 # See https://qengineering.eu/install-pytorch-on-jetson-nano.html
 
+# nms_rotated ---------------------------------
+-e yolov5_obb/utils/nms_rotated/.
+
 # Base ----------------------------------------
+imutils
 matplotlib==3.2.2
 numpy>=1.18.5
 # opencv-python>=4.5.4  # See https://qengineering.eu/install-opencv-4.5-on-jetson-nano.html
@@ -21,6 +25,10 @@ tensorboard>=2.4.1
 # Plotting ------------------------------------
 pandas>=1.1.4
 seaborn>=0.11.0
+
+# Server --------------------------------------
+pyzmq
+flask
 
 # Export --------------------------------------
 # coremltools>=4.1  # CoreML export

@@ -1,5 +1,7 @@
 import numpy as np
+
 cimport numpy as np
+
 
 cdef extern from "poly_overlaps.hpp":
     void _overlaps(np.float32_t*, np.float32_t*, np.float32_t*, int, int, int)

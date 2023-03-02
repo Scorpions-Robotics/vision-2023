@@ -1,8 +1,9 @@
-import os
-import numpy as np
-import cv2
 import copy
+import os
+
+import cv2
 import dota_utils as util
+import numpy as np
 
 
 class splitbase:

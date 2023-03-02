@@ -1,6 +1,6 @@
-import os
-import math
 import argparse
+import math
+import os
 import os.path as osp
 
 import numpy as np

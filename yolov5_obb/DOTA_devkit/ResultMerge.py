@@ -5,10 +5,11 @@
     Note, the evaluation is on the large scale images
 """
 import os
-import numpy as np
-import dota_utils as util
 import re
 import time
+
+import dota_utils as util
+import numpy as np
 import polyiou
 
 # the thresh for nms when merge image

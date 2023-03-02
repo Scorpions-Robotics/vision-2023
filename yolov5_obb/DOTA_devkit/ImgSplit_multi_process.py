@@ -2,18 +2,19 @@
 -------------
 This is the multi-process version
 """
-import os
 import codecs
-import numpy as np
-import math
-from dota_utils import GetFileFromThisRootDir
-import cv2
-import shapely.geometry as shgeo
-import dota_utils as util
 import copy
-from multiprocessing import Pool
-from functools import partial
+import math
+import os
 import time
+from functools import partial
+from multiprocessing import Pool
+
+import cv2
+import dota_utils as util
+import numpy as np
+import shapely.geometry as shgeo
+from dota_utils import GetFileFromThisRootDir
 
 
 def choose_best_pointorder_fit_another(poly1, poly2):

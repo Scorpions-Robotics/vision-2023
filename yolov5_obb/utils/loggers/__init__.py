@@ -10,7 +10,6 @@ from threading import Thread
 import pkg_resources as pkg
 import torch
 from torch.utils.tensorboard import SummaryWriter
-
 from utils.general import colorstr, emojis
 from utils.loggers.wandb.wandb_utils import WandbLogger
 from utils.plots import plot_images, plot_results

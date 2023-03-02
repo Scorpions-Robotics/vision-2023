@@ -1,9 +1,8 @@
 import os
 import os.path as osp
 
+from DOTA_devkit.DOTA2COCO_poly import DOTA2COCOTest, DOTA2COCOTrain, wordname_15
 from DOTA_devkit.DOTA2JSON import generate_json_labels
-from DOTA_devkit.DOTA2COCO_poly import DOTA2COCOTrain, DOTA2COCOTest, wordname_15
-
 from DOTA_devkit.ImgSplit_multi_process import splitbase as splitbase_trainval
 from DOTA_devkit.SplitOnlyImage_multi_process import splitbase as splitbase_test
 

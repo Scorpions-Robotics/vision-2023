@@ -46,8 +46,8 @@ from utils.general import (
     xyxy2xywh,
 )
 from utils.plots import Annotator, colors, save_one_box
-from utils.torch_utils import select_device, time_sync
 from utils.rboxs_utils import poly2rbox, rbox2poly
+from utils.torch_utils import select_device, time_sync
 
 
 @torch.no_grad()
@@ -60,7 +60,7 @@ def run(
     max_det=1000,  # maximum detections per image
     device="0",  # cuda device, i.e. 0 or 0,1,2,3 or cpu
     view_img=False,  # show results
-    stream=False,  # stream results and video
+    stream=True,  # stream results and video
     save_txt=False,  # save results to *.txt
     save_conf=False,  # save confidences in --save-txt labels
     save_crop=False,  # save cropped prediction boxes
@@ -92,9 +92,9 @@ def run(
 
         context = zmq.Context()
         angle_socket = context.socket(zmq.PUSH)
-        angle_socket.bind("tcp://*:5805")
+        angle_socket.bind("tcp://127.0.0.1:5805")
         video_socket = context.socket(zmq.PUSH)
-        video_socket.bind("tcp://*:5806")
+        video_socket.bind("tcp://127.0.0.1:5806")
 
     # Directories
     save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
@@ -126,7 +126,9 @@ def run(
     if webcam:
         view_img = check_imshow() and view_img
         cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt, set_fps=30)
+        dataset = LoadStreams(
+            source, img_size=imgsz, stride=stride, auto=pt, set_fps=30
+        )
         bs = len(dataset)  # batch_size
     else:
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
@@ -208,7 +210,7 @@ def run(
                         (cls, *poly, conf) if save_conf else (cls, *poly)
                     )  # label format
                     angle_data = (("%g " * len(line)).rstrip() % line).split()
-                    
+
                     if stream:
                         try:
                             angle_socket.send_pyobj(angle_data)
@@ -227,7 +229,7 @@ def run(
                         # if save_crop:  # Yolov5-obb doesn't support it yet
                         #     # save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
                         #     pass
-            
+
             else:
                 if stream:
                     try:
@@ -243,7 +245,7 @@ def run(
             if view_img:
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
-                
+
             if stream:
                 try:
                     video_socket.send_pyobj(im0)
@@ -357,21 +359,15 @@ def parse_opt():
     parser.add_argument(
         "--line-thickness", default=2, type=int, help="bounding box thickness (pixels)"
     )
-    parser.add_argument(
-        "--hide-labels", action="store_true", help="hide labels"
-    )
-    parser.add_argument(
-        "--hide-conf", action="store_true", help="hide confidences"
-    )
+    parser.add_argument("--hide-labels", action="store_true", help="hide labels")
+    parser.add_argument("--hide-conf", action="store_true", help="hide confidences")
     parser.add_argument(
         "--half", action="store_true", help="use FP16 half-precision inference"
     )
     parser.add_argument(
         "--dnn", action="store_true", help="use OpenCV DNN for ONNX inference"
     )
-    parser.add_argument(
-        "--stream", action="store_true", help="stream images to ZMQ"
-    )
+    parser.add_argument("--stream", action="store_true", help="stream images to ZMQ")
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
     print_args(FILE.stem, opt)

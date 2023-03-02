@@ -1,7 +1,8 @@
 """
     setup.py file for SWIG example
 """
-from distutils.core import setup, Extension
+from distutils.core import Extension, setup
+
 import numpy
 
 polyiou_module = Extension(

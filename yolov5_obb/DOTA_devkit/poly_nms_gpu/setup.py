@@ -2,12 +2,13 @@
     setup.py file for SWIG example
 """
 import os
-from os.path import join as pjoin
-from setuptools import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
 import subprocess
+from distutils.extension import Extension
+from os.path import join as pjoin
+
 import numpy as np
+from Cython.Distutils import build_ext
+from setuptools import setup
 
 
 def find_in_path(name, path):

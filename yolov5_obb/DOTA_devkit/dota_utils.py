@@ -1,10 +1,11 @@
-import sys
 import codecs
-import numpy as np
-import shapely.geometry as shgeo
+import math
 import os
 import re
-import math
+import sys
+
+import numpy as np
+import shapely.geometry as shgeo
 
 # import polyiou
 """

@@ -5,20 +5,22 @@
     Note, the evaluation is on the large scale images
 """
 import os
-import numpy as np
 import re
-import time
 import sys
+import time
+
+import numpy as np
 
 sys.path.insert(0, "..")
+import argparse
+import math
+import pdb
+import shutil
+from functools import partial
+from multiprocessing import Pool
+
 import DOTA_devkit.dota_utils as util
 import DOTA_devkit.polyiou as polyiou
-import pdb
-import math
-from multiprocessing import Pool
-from functools import partial
-import shutil
-import argparse
 
 ## the thresh for nms when merge image
 nms_thresh = 0.2

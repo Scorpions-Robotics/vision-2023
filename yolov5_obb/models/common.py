@@ -19,7 +19,6 @@ import torch
 import torch.nn as nn
 from PIL import Image
 from torch.cuda import amp
-
 from utils.datasets import exif_transpose, letterbox
 from utils.general import (
     LOGGER,
@@ -346,10 +345,10 @@ class DetectMultiBackend(nn.Module):
         #   ONNX Runtime:           *.onnx
         #   OpenCV DNN:             *.onnx with dnn=True
         #   TensorRT:               *.engine
-        from models.experimental import (
+        from models.experimental import (  # scoped to avoid circular import
             attempt_download,
             attempt_load,
-        )  # scoped to avoid circular import
+        )
 
         super().__init__()
         w = str(weights[0] if isinstance(weights, list) else weights)

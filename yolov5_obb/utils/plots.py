@@ -16,7 +16,6 @@ import pandas as pd
 import seaborn as sn
 import torch
 from PIL import Image, ImageDraw, ImageFont
-
 from utils.general import (
     LOGGER,
     Timeout,

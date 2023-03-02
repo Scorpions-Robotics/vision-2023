@@ -1,9 +1,10 @@
-import dota_utils as util
-import os
-import cv2
 import json
-from PIL import Image
+import os
 import os.path as osp
+
+import cv2
+import dota_utils as util
+from PIL import Image
 
 wordname_15 = [
     "plane",

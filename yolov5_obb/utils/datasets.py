@@ -10,6 +10,7 @@ import os
 import random
 import shutil
 import time
+from configparser import ConfigParser
 from itertools import repeat
 from multiprocessing.pool import Pool, ThreadPool
 from pathlib import Path
@@ -24,7 +25,6 @@ import yaml
 from PIL import ExifTags, Image, ImageOps
 from torch.utils.data import DataLoader, Dataset, dataloader, distributed
 from tqdm import tqdm
-
 from utils.augmentations import (
     Albumentations,
     augment_hsv,
@@ -46,11 +46,8 @@ from utils.general import (
     xywhn2xyxy,
     xyxy2xywhn,
 )
+from utils.rboxs_utils import poly2rbox, poly_filter
 from utils.torch_utils import torch_distributed_zero_first
-from utils.rboxs_utils import poly_filter, poly2rbox
-
-from configparser import ConfigParser
-
 
 config = ConfigParser()
 config.read("config.ini")
@@ -365,7 +362,9 @@ class LoadWebcam:  # for inference
 
 class LoadStreams:
     # YOLOv5 streamloader, i.e. `python detect.py --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP streams`
-    def __init__(self, sources="streams.txt", img_size=640, stride=32, auto=True, set_fps=30):
+    def __init__(
+        self, sources="streams.txt", img_size=640, stride=32, auto=True, set_fps=30
+    ):
         self.mode = "stream"
         self.img_size = img_size
         self.stride = stride

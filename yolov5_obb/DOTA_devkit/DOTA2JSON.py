@@ -3,9 +3,8 @@ import os
 import os.path as osp
 import random
 
+from dota_poly2rbox import poly2rbox_single, poly2rbox_single_v2
 from PIL import Image
-
-from dota_poly2rbox import poly2rbox_single_v2, poly2rbox_single
 
 
 def parse_ann_info(img_base_path, label_base_path, img_name):

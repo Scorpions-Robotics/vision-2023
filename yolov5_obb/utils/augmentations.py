@@ -8,7 +8,6 @@ import random
 
 import cv2
 import numpy as np
-
 from utils.general import (
     LOGGER,
     check_version,

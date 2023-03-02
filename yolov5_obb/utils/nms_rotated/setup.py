@@ -2,9 +2,9 @@
 import os
 import subprocess
 import time
-from setuptools import find_packages, setup
 
 import torch
+from setuptools import find_packages, setup
 from torch.utils.cpp_extension import BuildExtension, CppExtension, CUDAExtension
 
 

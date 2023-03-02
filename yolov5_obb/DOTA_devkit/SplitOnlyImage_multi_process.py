@@ -1,10 +1,11 @@
-import os
-import numpy as np
-import cv2
 import copy
-import dota_utils as util
-from multiprocessing import Pool
+import os
 from functools import partial
+from multiprocessing import Pool
+
+import cv2
+import dota_utils as util
+import numpy as np
 
 
 def split_single_warp(name, split_base, rate, extent):

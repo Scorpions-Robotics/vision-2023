@@ -16,7 +16,6 @@ from threading import Thread
 import numpy as np
 import torch
 from tqdm import tqdm
-
 from utils.rboxs_utils import poly2hbb, rbox2poly
 
 FILE = Path(__file__).resolve()
@@ -39,12 +38,12 @@ from utils.general import (
     colorstr,
     increment_path,
     non_max_suppression,
+    non_max_suppression_obb,
     print_args,
     scale_coords,
     scale_polys,
     xywh2xyxy,
     xyxy2xywh,
-    non_max_suppression_obb,
 )
 from utils.metrics import ConfusionMatrix, ap_per_class
 from utils.plots import output_to_target, plot_images, plot_val_study

@@ -5,14 +5,13 @@ Auto-anchor utils
 
 import random
 
+import cv2
 import numpy as np
 import torch
 import yaml
 from tqdm import tqdm
-
 from utils.general import LOGGER, colorstr, emojis
 from utils.rboxs_utils import pi, poly2rbox, regular_theta
-import cv2
 
 PREFIX = colorstr("AutoAnchor: ")
 

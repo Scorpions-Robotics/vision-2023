@@ -1,7 +1,8 @@
 import os
 import os.path as osp
-from DOTA_devkit.HRSC2DOTA import generate_txt_labels
+
 from DOTA_devkit.DOTA2JSON import generate_json_labels
+from DOTA_devkit.HRSC2DOTA import generate_txt_labels
 
 
 def preprare_hrsc2016(data_dir):

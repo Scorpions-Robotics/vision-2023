@@ -1,20 +1,28 @@
 ; Copy this file to config.ini and edit it to your needs
 [default]
+; Jetson Nano IP address
 flask_ip = 10.76.72.10
+; RoboRIO IP address
+networktables_server = 10.76.72.2
 weights = cone.pt
+; inference size (pixels)
 size = 320
 confidence_threshold = 0.3
 max_detections = 1
-device = 0
+computation_device = 0
+; use FP16 for inference
 half_precision = False
 save = False
 hide_labels = False
 hide_conf = False
 
+; set v4l2 camera options
 set_camera_options = True
 v4l2_width = 640
 v4l2_height = 480
-v4l2_format = YUYV
+v4l2_format = MJPG
 
-; Camera index or G-streamer pipeline
-camera_src = 0
+; GStreamer pipeline or camera index
+camera_src = v4l2src ! video/x-raw, width=640, height=480, framerate=30/1
+; camera device index
+camera_index = 0

@@ -22,9 +22,12 @@ video_receiver.connect("tcp://127.0.0.1:5806")
 browser_frame = None
 lock = threading.Lock()
 
-cmd_v4l2 = f"v4l2-ctl -v width={config.get('default', 'v4l2_width')},height={config.get('default', 'v4l2_height')},pixelformat={config.get('default', 'v4l2_format')} -d {config.get('default', 'camera_index')}"
+cmd_v4l2 = f"v4l2-ctl -v width={config.get('default', 'v4l2_width')}, height={config.get('default', 'v4l2_height')}, pixelformat={config.get('default', 'v4l2_format')} \
+--set-parm {config.get('default', 'v4l2_fps')} -d {config.get('default', 'camera_index')}"
+
 cmd_yolo = f"""
-python3 yolov5_obb/detect.py --source "{config.get('default', 'camera_src')}" \
+python3 yolov5_obb/detect.py --source "v4l2src device=/dev/video{config.get("default", "camera_index")} ! video/x-raw, width={config.get('default', 'v4l2_width')}, \
+height={config.get('default', 'v4l2_height')}, pixelformat={config.get('default', 'v4l2_format')} ! videoscale ! videoconvert ! appsink" \
 --stream --weights {config.get('default', 'weights')} --conf-thres {config.get('default', 'confidence_threshold')} \
 --device {config.get('default', 'computation_device')} --imgsz {config.get('default', 'size')} \
 --max-det {config.get('default', 'max_detections')} {"--half" if config.get('default', 'half_precision') == "True" else ""} \
@@ -34,6 +37,7 @@ python3 yolov5_obb/detect.py --source "{config.get('default', 'camera_src')}" \
 """
 
 posix = os.name != "nt"
+print(cmd_v4l2 if config.getboolean("default", "set_camera_options") else "Camera options not set")
 set_camera_options = (
     subprocess.run(shlex.split(cmd_v4l2, posix=posix))
     if config.getboolean("default", "set_camera_options")

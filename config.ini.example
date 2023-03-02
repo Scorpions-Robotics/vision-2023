@@ -5,23 +5,28 @@ flask_ip = 10.76.72.10
 ; RoboRIO IP address
 networktables_server = 10.76.72.2
 weights = cone.pt
-; inference size (pixels)
+; Inference size (pixels), Jetson Nano can't handle above 320 (real-time)
 size = 320
 confidence_threshold = 0.3
+; 1 in our case
 max_detections = 1
+; 0 = First GPU, 1 = Second GPU, cpu = CPU
 computation_device = 0
-; use FP16 for inference
+; Use FP16 for inference
 half_precision = False
+; Save a video, would be fun to watch after the match
 save = False
+; These don't have any effect on what you see but feel free to change them
 hide_labels = False
 hide_conf = False
 
-; set v4l2 camera options
+; Set v4l2 camera options. Should be set to True (for real) if you don't have anything special in your mind
 set_camera_options = True
+; All of the following options must be set in any condition
 v4l2_width = 640
 v4l2_height = 480
 v4l2_fps = 30
 v4l2_format = MJPG
 
-; camera device index
+; Camera device index
 camera_index = 0

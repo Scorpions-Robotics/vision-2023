@@ -60,7 +60,15 @@ def angle(result: list) -> int:
     dx = y2 - y1
     degrees = round(math.degrees(math.atan2(dy, dx)))
 
-    return abs(abs(degrees) - 90) * -1 if degrees < 0 else degrees - 90 * -1
+    returned_degrees = abs(abs(degrees) - 90) * -1 if degrees < 0 else degrees - 90 * -1
+    
+    if returned_degrees < -90:
+        returned_degrees = (returned_degrees +180 * -1)
+        
+    elif returned_degrees > 90:
+        returned_degrees = (returned_degrees -180) * -1
+        
+    return returned_degrees
 
 
 def data():

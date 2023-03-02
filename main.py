@@ -23,7 +23,7 @@ video_receiver.connect("tcp://127.0.0.1:5806")
 browser_frame = None
 lock = threading.Lock()
 
-cmd_v4l2 = f"v4l2-ctl --set-fmt-video=width={config.get('default', 'v4l2_width')},height={config.get('default', 'v4l2_height')},pixelformat={config.get('default', 'format')}"
+cmd_v4l2 = f"v4l2-ctl --set-fmt-video=width={config.get('default', 'v4l2_width')},height={config.get('default', 'v4l2_height')},pixelformat={config.get('default', 'v4l2_format')}"
 cmd_yolo = f"""
 python3 yolov5_obb/detect.py --source {config.get('default', 'source')} --stream \
 --weights {config.get('default', 'weights')} --conf-thres {config.get('default', 'confidence_threshold')} \

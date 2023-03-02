@@ -4,6 +4,8 @@
 flask_ip = 10.76.72.10
 ; RoboRIO IP address
 networktables_server = 10.76.72.2
+; Only set to False if you are testing
+disable_networktables = False
 weights = cone.pt
 ; Inference size (pixels), Jetson Nano can't handle above 320 (real-time)
 size = 320

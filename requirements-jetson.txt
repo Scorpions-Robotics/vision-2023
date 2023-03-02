@@ -26,9 +26,10 @@ tensorboard>=2.4.1
 pandas>=1.1.4
 seaborn>=0.11.0
 
-# Server --------------------------------------
+# Streaming -----------------------------------
 pyzmq
 flask
+pynetworktables
 
 # Export --------------------------------------
 # coremltools>=4.1  # CoreML export

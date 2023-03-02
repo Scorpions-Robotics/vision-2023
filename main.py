@@ -20,8 +20,14 @@ annotation_receiver.connect("tcp://127.0.0.1:5805")
 video_receiver = context.socket(zmq.PULL)
 video_receiver.connect("tcp://127.0.0.1:5806")
 
-NetworkTables.initialize(server=config.get("default", "networktables_server"))
-nt_table = NetworkTables.getTable("ScorpionsVision")
+networktables_disabled = config.getboolean("default", "disable_networktables")
+
+if not networktables_disabled:
+    try:
+        NetworkTables.initialize(server=config.get("default", "networktables_server"))
+        nt_table = NetworkTables.getTable("ScorpionsVision")
+    except Exception as e:
+        print(e)
 
 browser_frame = None
 lock = threading.Lock()
@@ -103,10 +109,11 @@ def main_func():
             3,
         )
 
-        try:
-            nt_table.putString("degrees", str(degrees))
-        except Exception as e:
-            print(e)
+        if not networktables_disabled:
+            try:
+                nt_table.putString("degrees", str(degrees))
+            except Exception as e:
+                print(e)
 
         with lock:
             browser_frame = video.copy()

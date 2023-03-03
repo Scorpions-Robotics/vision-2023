@@ -1,7 +1,7 @@
 ; Copy this file to config.ini and edit it to your needs
 [default]
 ; Jetson Nano IP address
-flask_ip = 10.76.72.10
+video_ip = 10.76.72.10
 ; RoboRIO IP address
 networktables_server = 10.76.72.2
 ; Only set to False if you are testing

@@ -127,7 +127,7 @@ def generate():
             if browser_frame is None:
                 continue
 
-            val, encodedImage = cv2.imencode(".jpg", browser_frame)
+            val, encodedImage = cv2.imencode(".jpg", browser_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
 
             if not val:
                 continue

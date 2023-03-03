@@ -2,7 +2,7 @@ import sys
 import cv2
 
 def read_cam():
-    cap = cv2.VideoCapture("v4l2src device=/dev/video0 ! qtdemux ! h264parse ! nvv4l2decoder ! nvvidconv ! video/x-raw, width=640, height=480 format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink")
+    cap = cv2.VideoCapture("v4l2src device=/dev/video0 ! video/x-raw, width=640, height=480, pixelformat=MJPG ! videoscale ! videoconvert ! appsink ! qtdemux ! h264parse ! nvv4l2decoder ! nvvidconv ! video/x-raw, width=640, height=480 format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink")
 
     w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)

@@ -4,7 +4,6 @@ import shlex
 import subprocess
 import sys
 import threading
-import base64
 from configparser import ConfigParser
 
 import cv2
@@ -20,8 +19,6 @@ annotation_receiver = context.socket(zmq.PULL)
 annotation_receiver.connect("tcp://127.0.0.1:5805")
 video_receiver = context.socket(zmq.PULL)
 video_receiver.connect("tcp://127.0.0.1:5806")
-base64_sender = context.socket(zmq.PUB)
-base64_sender.connect(f"tcp://{config.get('default', 'video_ip')}:5807")
 
 networktables_disabled = config.getboolean("default", "disable_networktables")
 
@@ -119,16 +116,65 @@ def main_func():
                 print(e)
 
         with lock:
-            encoded_video = cv2.imencode(".jpg", video, [int(cv2.IMWRITE_JPEG_QUALITY), 20])[1].tobytes()
-            base64_sender.send(b"video " + base64.b64encode(encoded_video))
+            browser_frame = video.copy()
+
+
+def generate():
+    global browser_frame, lock
+
+    while True:
+        with lock:
+            if browser_frame is None:
+                continue
+
+            val, encodedImage = cv2.imencode(".jpg", browser_frame)
+
+            if not val:
+                continue
+
+        yield (
+            b"--frame\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encodedImage) + b"\r\n"
+        )
+
+
+# Flask Section
+app = Flask(__name__)
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/video_feed")
+def video_feed():
+    return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+
+def shutdown_server():
+    sd_func = request.environ.get("werkzeug.server.shutdown")
+    if sd_func is None:
+        print("Server not running")
+    sd_func()
 
 
 if __name__ == "__main__":
     try:
-        main_func()
+        t = threading.Thread(target=main_func)
+        t.daemon = True
+        t.start()
+
+        app.run(
+            host=config.get("default", "flask_ip"),
+            port=5807,
+            debug=True,
+            threaded=True,
+            use_reloader=False,
+        )
 
     except KeyboardInterrupt:
         yolo.kill()
-        # shutdown_server()
+        shutdown_server()
         print("Program terminated by user")
         sys.exit(0)

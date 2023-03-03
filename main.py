@@ -125,9 +125,7 @@ def main_func():
 
 if __name__ == "__main__":
     try:
-        t = threading.Thread(target=main_func)
-        t.daemon = True
-        t.start()
+        main_func()
 
     except KeyboardInterrupt:
         yolo.kill()

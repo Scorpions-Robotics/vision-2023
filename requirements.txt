@@ -26,7 +26,7 @@ seaborn>=0.11.0
 
 # Streaming -----------------------------------
 pyzmq
-flask
+mjpeg-streamer
 pynetworktables
 
 # Export --------------------------------------

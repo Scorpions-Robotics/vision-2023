@@ -1,10 +1,10 @@
 ; Copy this file to config.ini and edit it to your needs
 [default]
 ; Jetson Nano IP address
-flask_ip = 10.76.72.10
+ip = 10.76.72.10
 ; RoboRIO IP address
 networktables_server = 10.76.72.2
-; Only set to False if you are testing
+; Only set to True if you are testing
 disable_networktables = False
 weights = cone.pt
 ; Inference size (pixels), Jetson Nano can't handle above 320 (real-time)

@@ -3,12 +3,11 @@ import os
 import shlex
 import subprocess
 import sys
-import threading
 from configparser import ConfigParser
 
 import cv2
 import zmq
-from flask import Flask, Response, render_template, request
+from mjpeg_streamer import Stream, MjpegServer
 from networktables import NetworkTables
 
 config = ConfigParser()
@@ -16,9 +15,9 @@ config.read("config.ini")
 
 context = zmq.Context()
 annotation_receiver = context.socket(zmq.PULL)
-annotation_receiver.connect("tcp://127.0.0.1:5805")
+annotation_receiver.connect("tcp://127.0.0.1:5804")
 video_receiver = context.socket(zmq.PULL)
-video_receiver.connect("tcp://127.0.0.1:5806")
+video_receiver.connect("tcp://127.0.0.1:5803")
 
 networktables_disabled = config.getboolean("default", "disable_networktables")
 
@@ -29,16 +28,17 @@ if not networktables_disabled:
     except Exception as e:
         print(e)
 
-browser_frame = None
-lock = threading.Lock()
+cmd_v4l2 = f"v4l2-ctl -v width={config.get('default', 'width')},\
+height={config.get('default', 'height')},pixelformat=MJPG \
+--set-parm {config.get('default', 'fps')} -d {config.get('default', 'camera_index')}"
 
-cmd_v4l2 = f"v4l2-ctl -v width={config.get('default', 'v4l2_width')},height={config.get('default', 'v4l2_height')},pixelformat={config.get('default', 'v4l2_format')} \
---set-parm {config.get('default', 'v4l2_fps')} -d {config.get('default', 'camera_index')}"
+source_str = config.get("default", "camera_index") if config.get("default", "gstreamer_cap") \
+    else f"""'v4l2src device=/dev/video{config.get("default", "camera_index")} ! video/x-raw, width={config.get('default', 'width')}, \
+height={config.get('default', 'height')}, pixelformat=MJPG ! videoscale ! videoconvert ! appsink'"""
 
 cmd_yolo = f"""
-python3 yolov5_obb/detect.py --source "v4l2src device=/dev/video{config.get("default", "camera_index")} ! video/x-raw, width={config.get('default', 'v4l2_width')}, \
-height={config.get('default', 'v4l2_height')}, pixelformat={config.get('default', 'v4l2_format')} ! videoscale ! videoconvert ! appsink" \
---stream --weights {config.get('default', 'weights')} --conf-thres {config.get('default', 'confidence_threshold')} \
+python3 yolov5_obb/detect.py --source {source_str} --stream \
+--weights {config.get('default', 'weights')} --conf-thres {config.get('default', 'confidence_threshold')} \
 --device {config.get('default', 'computation_device')} --imgsz {config.get('default', 'size')} \
 --max-det {config.get('default', 'max_detections')} {"--half" if config.get('default', 'half_precision') == "True" else ""} \
 {"--nosave" if config.get('default', 'save') == "False" else ""} \
@@ -57,9 +57,12 @@ set_camera_options = (
     if config.getboolean("default", "set_camera_options")
     else None
 )
-print(cmd_yolo)
-yolo = subprocess.Popen(shlex.split(cmd_yolo, posix=posix))
 
+print(cmd_yolo)
+
+stream = Stream("cone", size=(640, 480), quality=10, fps=30)
+server = MjpegServer(config.get("default", "ip"), 5807)
+server.add_stream(stream)
 
 def angle(result: list) -> int:
     """Takes coordinates (x, y) of a rectangle and returns the degrees from the y-axis."""
@@ -90,13 +93,9 @@ def angle(result: list) -> int:
 
 
 def main_func():
-    global browser_frame, lock
-
     while True:
-        video, angle_data = (
-            video_receiver.recv_pyobj(),
-            annotation_receiver.recv_pyobj(),
-        )
+        video = video_receiver.recv_pyobj()
+        angle_data = annotation_receiver.recv_pyobj()
         degrees = angle(angle_data)
 
         cv2.putText(
@@ -109,72 +108,25 @@ def main_func():
             3,
         )
 
+        stream.set_frame(video)
+        
         if not networktables_disabled:
             try:
-                nt_table.putString("degrees", str(degrees))
+                nt_table.putString("cone", str(degrees))
             except Exception as e:
                 print(e)
-
-        with lock:
-            browser_frame = video.copy()
-
-
-def generate():
-    global browser_frame, lock
-
-    while True:
-        with lock:
-            if browser_frame is None:
-                continue
-
-            val, encodedImage = cv2.imencode(".jpg", browser_frame)
-
-            if not val:
-                continue
-
-        yield (
-            b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encodedImage) + b"\r\n"
-        )
-
-
-# Flask Section
-app = Flask(__name__)
-
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-
-@app.route("/video_feed")
-def video_feed():
-    return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
-
-
-def shutdown_server():
-    sd_func = request.environ.get("werkzeug.server.shutdown")
-    if sd_func is None:
-        print("Server not running")
-    sd_func()
 
 
 if __name__ == "__main__":
     try:
-        t = threading.Thread(target=main_func)
-        t.daemon = True
-        t.start()
-
-        app.run(
-            host=config.get("default", "flask_ip"),
-            port=5807,
-            debug=True,
-            threaded=True,
-            use_reloader=False,
-        )
+        yolo = subprocess.Popen(shlex.split(cmd_yolo, posix=posix))
+        server.start()
+        main_func()
 
     except KeyboardInterrupt:
         yolo.kill()
-        shutdown_server()
+        server.stop()
         print("Program terminated by user")
         sys.exit(0)
+    except Exception as e:
+        print(e)

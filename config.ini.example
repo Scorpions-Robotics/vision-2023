@@ -22,13 +22,16 @@ save = False
 hide_labels = False
 hide_conf = False
 
-; Set v4l2 camera options. Should be set to True (for real) if you don't have anything special in your mind
-set_camera_options = True
+; Set v4l2 camera options. If you don't know what this is, leave it as False
+set_camera_options = False
+
 ; All of the following options must be set in any condition
-v4l2_width = 640
-v4l2_height = 480
-v4l2_fps = 30
-v4l2_format = MJPG
+width = 640
+height = 480
+fps = 30
+
+; Use gstreamer cap? If you don't know what this is, leave it as False
+gstreamer_cap = False
 
 ; Camera device index
 camera_index = 0

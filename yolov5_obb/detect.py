@@ -94,12 +94,11 @@ def run(
 
     if stream:
         import zmq
-
         context = zmq.Context()
         angle_socket = context.socket(zmq.PUSH)
-        angle_socket.bind("tcp://127.0.0.1:5805")
+        angle_socket.bind("tcp://127.0.0.1:5804")
         video_socket = context.socket(zmq.PUSH)
-        video_socket.bind("tcp://127.0.0.1:5806")
+        video_socket.bind("tcp://127.0.0.1:5803")
 
     # Directories
     save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run

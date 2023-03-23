@@ -393,7 +393,7 @@ class LoadStreams:
 
                 s = pafy.new(s).getbest(preftype="mp4").url  # YouTube URL
             s = eval(s) if s.isnumeric() else s  # i.e. s = '0' local webcam
-            if s.startswith("v4l2src"):
+            if str(s).startswith("v4l2src"):
                 cap = cv2.VideoCapture(s, cv2.CAP_GSTREAMER)
             else:
                 cap = cv2.VideoCapture(s)

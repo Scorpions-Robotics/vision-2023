@@ -61,7 +61,7 @@ set_camera_options = (
 print(cmd_yolo)
 
 stream = Stream("cone", size=(640, 480), quality=10, fps=30)
-server = MjpegServer(config.get("default", "ip"), 5807)
+server = MjpegServer(config.get("default", "ip"), 5805)
 server.add_stream(stream)
 
 def angle(result: list) -> int:
